@@ -1,0 +1,54 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           personal-page
+version:        0.0.0
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Lib
+      Types
+      Api
+      Handlers
+  other-modules:
+      Paths_personal_page
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , hspec
+    , lucid
+    , mtl
+    , openapi3
+    , servant-auth
+    , servant-auth-server
+    , servant-client
+    , servant-lucid
+    , servant-openapi3
+    , servant-quickcheck
+    , servant-server
+    , sqlite-simple
+    , text
+    , wai
+    , wai-cors
+    , wai-extra
+    , warp
+  default-language: Haskell2010
+
+executable personal-page-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_personal_page
+  hs-source-dirs:
+      app
+  build-depends:
+      base
+    , personal-page
+  default-language: Haskell2010

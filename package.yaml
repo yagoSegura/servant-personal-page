@@ -1,0 +1,37 @@
+name: personal-page
+
+library:
+  source-dirs: src
+  exposed-modules:
+    - Lib
+    - Types
+    - Api
+    - Handlers
+  dependencies:
+    - base >= 4.7 && < 5
+    - servant-server
+    - aeson
+    - text
+    - wai
+    - warp
+    - lucid
+    - servant-lucid
+    - servant-client
+    - openapi3
+    - servant-openapi3
+    - mtl
+    - sqlite-simple
+    - servant-auth
+    - servant-auth-server
+    - wai-cors
+    - wai-extra
+    - servant-quickcheck
+    - hspec
+    
+executables:
+  personal-page-exe:
+    main:                Main.hs
+    source-dirs:         app
+    dependencies:
+      - base
+      - personal-page # Nombre de tu proyecto

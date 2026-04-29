@@ -1,2 +1,1 @@
-# servant-personal-page
-servant personal page
+# personal-page
