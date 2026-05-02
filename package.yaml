@@ -25,7 +25,6 @@ library:
     - servant-auth-server
     - wai-cors
     - wai-extra
-    - servant-quickcheck
     - hspec
     
 executables:

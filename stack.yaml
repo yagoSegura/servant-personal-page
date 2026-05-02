@@ -41,7 +41,7 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- servant-quickcheck-0.1.1.0@sha256:5b9945f159a6ecd9b99e9caea670a00364d2e0eaf016ebb60a6529af58e4abbf,3898
+#- servant-quickcheck-0.1.1.0@sha256:5b9945f159a6ecd9b99e9caea670a00364d2e0eaf016ebb60a6529af58e4abbf,3898
 - data-default-class-0.1.2.2@sha256:51400ed341ec87e86a4acf83301c6890e1fc67708e2d0ac519d48e0a14f54c15,1309
 
 # Override default flag values for project packages and extra-deps

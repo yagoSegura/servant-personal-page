@@ -1,0 +1,6 @@
+.stack-work/
+.git/
+node_modules/
+*.sqlite
+*.lock
+dist-newstyle/

@@ -37,7 +37,7 @@ import Servant.Server.Internal
 import Types
 import Api
 import Handlers
-
+import System.Environment (lookupEnv)
 
 data Trazabilidad
 
@@ -51,6 +51,7 @@ instance HasServer api context => HasServer (Trazabilidad :> api) context where
     -- Aquí podrías inspeccionar la petición (request) y fallar con `delayedFailFatal`
     -- o simplemente dejar que la petición continúe hacia el siguiente combinador:
     route (Proxy :: Proxy api) context subserver
+   --  hoistServerWithContext _ Proxy nt = hoistServerWithContext (Proxy :: Proxy api) Proxy nt
 
 -- 3. Implementacion del servidor
 -- Pasamos la config desde arriba
@@ -82,8 +83,20 @@ app cfg cookieCfg jwtCfg =
 -- En tu Main/startApp creamos la configuración inicial
 startApp :: IO ()
 startApp = do
-    putStrLn "Inicializando Base de Datos..."
-    conn <- open "mi_base_de_datos.sqlite"
+    -- Leer puerto desde variable de entorno, o usar 8080 por defecto
+    maybePort <- lookupEnv "PORT"
+    let port = case maybePort of
+          Just p  -> read p
+          Nothing -> 8080
+    
+    -- Leer ruta de la BD desde variable de entorno
+    maybeDbUrl <- lookupEnv "DATABASE_URL"
+    let dbPath = case maybeDbUrl of
+          Just p  -> p
+          Nothing -> "/tmp/mi_base_de_datos.sqlite"
+    
+    putStrLn $ "Abriendo base de datos: " ++ dbPath
+    conn <- open dbPath
     
     -- Creamos la tabla y un dato inicial
     execute_ conn "CREATE TABLE IF NOT EXISTS proyectos (id INTEGER PRIMARY KEY, titulo TEXT, tecnologia TEXT)"
@@ -103,11 +116,14 @@ startApp = do
 
     let miConfig = Config "Producción" conn -- tu config de antes
     let port = 8080
-    putStrLn $ "Arrancando servidor en puerto " ++ show port
+
+    -- putStrLn $ "Arrancando servidor en puerto " ++ show port
     
     -- 3. Le pasamos todo a WAI
-    run port $ logStdoutDev $ simpleCors $ app miConfig cookieCfg jwtCfg
+    -- run port $ logStdoutDev $ simpleCors $ app miConfig cookieCfg jwtCfg
 
+    putStrLn $ "Arrancando servidor en puerto " ++ show port
+    run port (app miConfig cookieCfg jwtCfg)
 
 
 
