@@ -12,6 +12,7 @@ library:
     - servant-server
     - aeson
     - text
+    - bytestring
     - wai
     - warp
     - lucid

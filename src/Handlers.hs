@@ -26,6 +26,9 @@ import Api (ApiDatos)
 import Data.Proxy (Proxy(..))
 import Servant.Auth.Server (AuthResult(..))
 import Servant (ServerT, (:<|>)(..))
+import qualified Data.Text.IO as TIO -- Para leer el archivo como texto directamente
+import Lucid (toHtmlRaw)            -- La función correcta para Lucid
+
 
 -- TUS PROPIOS MÓDULOS (La clave)
 import Types
@@ -55,14 +58,10 @@ leerPost slug = do
     else return $ PostBlog ("Contenido del post: " <> slug)
 
 miHome :: Handler (Html ())
-miHome = return $ do
-    html_ $ do
-        head_ $ do
-          title_ "Mi Página Personal"
-          link_ [rel_ "stylesheet", type_ "text/css", href_ "/assets/estilo.css"]
-        body_ $ do
-          h1_ "Bienvenido a mi web"
-          p_ "Renderizado tipo-seguro desde Servant y Emacs."
+miHome = do
+  -- Leemos el archivo usando Text.IO (ya incluido en la librería 'text')
+  contenido <- liftIO $ TIO.readFile "static/index.html"
+  return $ toHtmlRaw contenido
 
 
 -- Manejador de estaticos
