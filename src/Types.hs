@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Types where
 
@@ -12,6 +13,10 @@ import Servant (Handler)
 import Control.Monad.Reader (ReaderT)
 import Servant.Auth.Server (ToJWT, FromJWT)
 import Data.OpenApi (ToSchema)
+import Elm.Derive (deriveElmDef)
+import Data.Proxy (Proxy(..))
+import Data.Aeson.TH (defaultOptions)
+
 
 -- Modelos
 data Proyecto = Proyecto { idProy :: Int, titulo :: Text, tecnologia :: Text } 
@@ -43,3 +48,8 @@ instance FromJWT Admin
 -- Configuración y Monad
 data Config = Config { entorno :: String, dbConn :: Connection }
 type AppM = ReaderT Config Handler
+
+$(deriveElmDef defaultOptions ''Proyecto)
+$(deriveElmDef defaultOptions ''MensajeContacto)
+$(deriveElmDef defaultOptions ''PostBlog)
+

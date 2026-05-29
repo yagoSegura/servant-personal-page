@@ -27,6 +27,9 @@ library:
     - wai-cors
     - wai-extra
     - hspec
+    - servant-elm
+    - elm-bridge
+    - filepath
     
 executables:
   personal-page-exe:
@@ -35,3 +38,13 @@ executables:
     dependencies:
       - base
       - personal-page # Nombre de tu proyecto
+      
+  generate-elm:  # Este es el nuevo
+    main: Main.hs
+    source-dirs: generate-elm
+    dependencies:
+      - personal-page       # Hereda tu librería
+      - servant-elm         # Para la función generateElmForAPI
+      - text                 # Para Data.Text y Data.Text.IO
+      - base                 # Para Prelude y Data.Proxy
+

@@ -17,7 +17,8 @@ type ApiDatos =
   :<|> "blog" :> Capture "slug" Text :> Get '[JSON] PostBlog
 
 type ApiUI =
-       "home" :> Get '[HTML] (Html ())
+  "health" :> Get '[JSON] NoContent 
+  :<|> "home" :> Get '[HTML] (Html ())
   :<|> "assets" :> Raw
   :<|> "swagger.json" :> Get '[JSON] OpenApi
 

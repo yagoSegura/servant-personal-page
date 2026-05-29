@@ -38,6 +38,7 @@ import Types
 import Api
 import Handlers
 import System.Environment (lookupEnv)
+import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 
 data Trazabilidad
 
@@ -54,42 +55,35 @@ instance HasServer api context => HasServer (Trazabilidad :> api) context where
    --  hoistServerWithContext _ Proxy nt = hoistServerWithContext (Proxy :: Proxy api) Proxy nt
 
 -- 3. Implementacion del servidor
--- Pasamos la config desde arriba
+
+-- Convierte nuestro AppM en el Handler que Servant necesita
+nt :: Config -> AppM a -> Handler a
+nt config app = runReaderT app config
+
 server :: Config -> Server PaginaPersonalAPI
-server cfg = apiUIServer 
-        :<|> hoistServer (Proxy :: Proxy ApiDatos) (nt cfg) apiDatosServerAppM 
-        :<|> hoistServerWithContext (Proxy :: Proxy ApiAdmin) (Proxy :: Proxy '[CookieSettings, JWTSettings]) (nt cfg) adminServer
+server cfg = 
+    (healthCheck :<|> miHome :<|> servirEstaticos :<|> servirSwagger)
+    :<|> hoistServer (Proxy :: Proxy ApiDatos) (nt cfg) apiDatosServerAppM
+    :<|> hoistServerWithContext (Proxy :: Proxy ApiAdmin) (Proxy :: Proxy '[CookieSettings, JWTSettings]) (nt cfg) adminServerAppM
 
-  where
-    apiUIServer = miHome :<|> servirEstaticos :<|> servirSwagger
-    
-    -- LA MAGIA: hoistServer recorre todo tu API y aplica el traductor 'nt'
-    apiDatosServer :: Server ApiDatos
-    apiDatosServer = hoistServer (Proxy :: Proxy ApiDatos) (nt cfg) apiDatosServerAppM
-
-    adminServer :: ServerT ApiAdmin AppM
-    adminServer = crearProyectoProtegido
-    
-    
--- Actualizamos el WAI App
--- Añadimos las configuraciones de JWT al WAI app
+-- Creamos la application de WAI a partir de nuestro servidor Servant
 app :: Config -> CookieSettings -> JWTSettings -> Application
 app cfg cookieCfg jwtCfg = 
     let contexto = cookieCfg :. jwtCfg :. EmptyContext
     in serveWithContext (Proxy :: Proxy PaginaPersonalAPI) contexto (server cfg)
 
-
+-- Servant genera las funciones de cliente mágicamente.
+pedirPortfolio :<|> enviarContacto :<|> pedirBlog 
+  = client (Proxy :: Proxy ApiDatos)
 
 -- En tu Main/startApp creamos la configuración inicial
 startApp :: IO ()
 startApp = do
-    -- Leer puerto desde variable de entorno, o usar 8080 por defecto
     maybePort <- lookupEnv "PORT"
     let port = case maybePort of
           Just p  -> read p
           Nothing -> 8080
     
-    -- Leer ruta de la BD desde variable de entorno
     maybeDbUrl <- lookupEnv "DATABASE_URL"
     let dbPath = case maybeDbUrl of
           Just p  -> p
@@ -98,73 +92,20 @@ startApp = do
     putStrLn $ "Abriendo base de datos: " ++ dbPath
     conn <- open dbPath
     
-    -- Creamos la tabla y un dato inicial
     execute_ conn "CREATE TABLE IF NOT EXISTS proyectos (id INTEGER PRIMARY KEY, titulo TEXT, tecnologia TEXT)"
     execute_ conn "INSERT OR IGNORE INTO proyectos (id, titulo, tecnologia) VALUES (1, 'Mi Web en Haskell', 'Servant + SQLite')"
     
-        -- 1. Generamos llave criptográfica y configuraciones
     miLlave <- generateKey
     let jwtCfg = defaultJWTSettings miLlave
     let cookieCfg = defaultCookieSettings
 
-    -- 2. Creamos un token falso para ti y lo imprimimos
     let yoMismo = Admin "Yago"
     tokenGenerado <- makeJWT yoMismo jwtCfg Nothing
     case tokenGenerado of
       Right t  -> putStrLn $ "\n=== TU TOKEN SECRETO ===\n" ++ show t ++ "\n========================\n"
       Left err -> putStrLn "Error creando token"
 
-    let miConfig = Config "Producción" conn -- tu config de antes
-    let port = 8080
-
-    -- putStrLn $ "Arrancando servidor en puerto " ++ show port
-    
-    -- 3. Le pasamos todo a WAI
-    -- run port $ logStdoutDev $ simpleCors $ app miConfig cookieCfg jwtCfg
-
+    let miConfig = Config "Producción" conn
+    let appConLog = logStdoutDev $ simpleCors $ app miConfig cookieCfg jwtCfg
     putStrLn $ "Arrancando servidor en puerto " ++ show port
-    run port (app miConfig cookieCfg jwtCfg)
-
-
-
-
--- Fíjate en ServerT. Significa: "Un servidor para ApiDatos, pero corriendo en AppM"
---apiDatosServerAppM :: ServerT ApiDatos AppM
---apiDatosServerAppM = obtenerProyectos :<|> recibirContacto :<|> leerPost
-
---  where
-    -- Fíjate: ¡Ahora usamos AppM!
---    obtenerProyectos :: AppM [Proyecto]
---    obtenerProyectos = do
---      conf <- ask
---      let conexion = dbConn conf
-
---      liftIO $ putStrLn "Haciendo SELECT a la base de datos..."
-      -- Ejecutamos la consulta. 'query_' infiere que devuelve [Proyecto] por la firma de la función.
---      proyectosDB <- liftIO $ query_ conexion "SELECT id, titulo, tecnologia FROM proyectos"
---      return proyectosDB
-      
-    -- (Cambia también recibirContacto y leerPost para que devuelvan AppM)
---    recibirContacto :: MensajeContacto -> AppM NoContent
---    recibirContacto m = return NoContent
-    
---    leerPost :: Text -> AppM PostBlog
---    leerPost slug = do
-      -- Simulamos lógica de negocio: si piden el post "secreto", damos un 404
---      if slug == "secreto"
---        then throwError err404 { errBody = "El post que buscas no existe o es privado" }
---        else return $ PostBlog ("Contenido del post: " <> slug)
-
-    
--- 4. Funciones de exportacion
--- Creamos la application de WAI a partir de nuestro servidor Servant
-
--- Convierte nuestro AppM en el Handler que Servant necesita
-nt :: Config -> AppM a -> Handler a
-nt config app = runReaderT app config
-
-
--- Servant genera las funciones de cliente mágicamente.
--- Usamos el mismo patrón `:<|>` para desestructurar las funciones generadas.
-pedirPortfolio :<|> enviarContacto :<|> pedirBlog 
-  = client (Proxy :: Proxy ApiDatos)
+    run port appConLog
