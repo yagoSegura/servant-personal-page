@@ -72,19 +72,6 @@ leerPost slug = do
 raiz :: Handler (Html ())
 raiz = miHome  -- Simplemente redirige a la misma función que home
 
---miHome :: Handler (Html ())
---miHome = do
---    contenido <- liftIO $ TIO.readFile "/usr/local/share/personal-page/static/index.html"
---    return $ toHtmlRaw contenido
--- miHome :: Handler (Html ())
--- miHome = do
---     resultado <- liftIO $ try $ TIO.readFile "/usr/local/share/personal-page/static/index.html"
---     case resultado of
---         Left e -> do
---            liftIO $ print (e :: IOException)
---            return $ toHtmlRaw (T.pack "Error al leer el archivo")
---        Right contenido ->
---            return $ toHtmlRaw contenido
 
 miHome :: Handler (Html ())
 miHome = do
