@@ -1,0 +1,53 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches: [ release ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Stack (Haskell)
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.10.3'
+
+      - name: Compilar Frontend (Elm)
+        run: |
+          cd frontend
+          wget -O elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
+          gunzip elm.gz
+          chmod +x elm
+          sudo mv elm /usr/local/bin/elm
+          elm make src/MainUi.elm --output=../static/index.html
+          cd ..
+
+      - name: Compilar Backend (Stack)
+        run: stack build --system-ghc --copy-bins
+
+      - name: Construir imagen Docker
+        run: docker build -t yaguet/personal-page:${{ github.sha }} .
+
+      - name: Subir a Docker Hub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker tag yaguet/personal-page:${{ github.sha }} yaguet/personal-page:latest
+          docker push yaguet/personal-page:latest
+
+      - name: Desplegar en Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"serviceId": "srv-tu_service_id"}' \
+            https://api.render.com/v1/services/srv-tu_service_id/deploys
