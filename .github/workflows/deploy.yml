@@ -45,9 +45,10 @@ jobs:
       - name: Desplegar en Render
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: srv-d7r7f3vavr4c73fchgbg
         run: |
           curl -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"serviceId": "srv-tu_service_id"}' \
+            -d '{"serviceId": $SERVICE_ID}' \
             https://api.render.com/v1/services/srv-tu_service_id/deploys
