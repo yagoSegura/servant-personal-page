@@ -75,10 +75,13 @@ raiz = miHome  -- Simplemente redirige a la misma función que home
 
 miHome :: Handler (Html ())
 miHome = do
-    contenido <- liftIO $ BL.readFile "/usr/local/share/personal-page/static/index.html"
-    let txt = TLE.decodeUtf8 contenido  -- O TLE.decodeLatin1 si falla
+    staticDir <- liftIO $ lookupEnv "STATIC_DIR"
+    let dir = case staticDir of
+          Just d  -> d
+          Nothing -> "static"  -- Para desarrollo local
+    contenido <- liftIO $ BL.readFile (dir ++ "/index.html")
+    let txt = TLE.decodeUtf8 contenido
     return $ toHtmlRaw txt
-
 
 -- health check
 healthCheck :: Handler NoContent
