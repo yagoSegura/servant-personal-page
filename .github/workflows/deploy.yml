@@ -24,7 +24,7 @@ jobs:
           gunzip elm.gz
           chmod +x elm
           sudo mv elm /usr/local/bin/elm
-          elm make src/MainUi.elm --output=../static/index.html
+          elm make src/MainStyled.elm --output=../static/index.html
           cd ..
 
       - name: Compilar Backend (Stack)
