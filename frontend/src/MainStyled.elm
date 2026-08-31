@@ -200,7 +200,7 @@ mainContent : Model -> Html Msg
 mainContent model =
     case model.route of
         Home ->
-            Div [ style "max-width" "600px", style "margin" "0 auto", style "padding" "20px", style "text-align" "center" ]
+            div [ style "max-width" "600px", style "margin" "0 auto", style "padding" "20px", style "text-align" "center" ]
                 [ h1 [] [ text "Welcome to my personal page" ]
                 , p [ style "font-size" "18px", style "line-height" "1.6", style "color" "#333" ]
                     [ text "I'm a passionate developer interested in functional programming. "
