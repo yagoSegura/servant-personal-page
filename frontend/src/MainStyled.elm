@@ -196,20 +196,40 @@ view model =
     }
 
 
+
+-- TODO : Review text and format with deepseek in order to optimize the text
+
+
 mainContent : Model -> Html Msg
 mainContent model =
     case model.route of
         Home ->
-            div [ style "max-width" "600px", style "margin" "0 auto", style "padding" "20px", style "text-align" "center" ]
+            div [ style "max-width" "700px", style "margin" "0 auto", style "padding" "10px", style "text-align" "center" ]
                 [ h1 [] [ text "Welcome to my personal page" ]
                 , p [ style "font-size" "18px", style "line-height" "1.6", style "color" "#333" ]
                     [ text "I'm a passionate developer interested in functional programming. "
-                    , text "I've been working in Java for more than 15 years, and now, I changed my mind. "
-                    , text "I'm learning Haskell, Elm, Gleam."
+                    , text "I've been working in Java for more than 15 years, and now, I have changed my mind. "
+                    , text "I have moved from imperative paradigms to other scenarios."
                     ]
-                , p [ style "font-size" "16px", style "color" "#333" ]
-                    [ text "Besides of this, I'm interested too in low level programming."
-                    , text "I'm playing with Zig and Odin, as well as STM32 Microcontrollers."
+                , p [ style "font-size" "18px", style "color" "#333" ]
+                    [ text "On the one hand, I'm interested in functional programming. I'm learning Haskell, Elm, Gleam, "
+                    , text "among other functional programming languages, as well as the tools included in them. I'm"
+                    , text "doing different side projects with different level of complexity in order to master each"
+                    , text "of those languages."
+                    ]
+                , p [ style "font-size" "18px", style "color" "#333" ]
+                    [ text "On the other hand, I'm curious about low level programming. Rust, Zig and Odin worths to take "
+                    , text "a look , so I'm working in Ziglings project in order to excel in Zig language, as well as "
+                    , text "different POC side projects written in Odin or Rust"
+                    ]
+                , p [ style "font-size" "18px", style "color" "#333" ]
+                    [ text "Last but not least, I'm working in different fields like compilers, type theory, category "
+                    , text "theory, ... as well as OS, Game development and quantum computing creating "
+                    , text "different POC side projects written in Odin, Rust, and other languages"
+                    ]
+                , p [ style "font-size" "18px", style "color" "#333" ]
+                    [ text "Welcome, and feel free to tinker through my projects in Portfolio section and check"
+                    , text "last updates in blog section. Welcome, and enjoy"
                     ]
                 ]
 
